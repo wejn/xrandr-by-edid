@@ -2,7 +2,7 @@
 #
 # vim: set ts=4 sw=4 et :
 
-# This is meant to setup xrandr layout by edid substring. For example by monitor
+# This is meant to setup xrandr layout by edid substring. For example by display
 # serial number.
 #
 # License: GPL v. 2.0, not the latter
