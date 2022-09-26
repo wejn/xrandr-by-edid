@@ -53,7 +53,10 @@ class XRandr
     # For raw hex encoded edid, return human readable strings
     def self.humanize_edid(edid)
         if edid
-            edid.scan(/../).map { |x| n=x.to_i(16); (32..126).include?(n) ? n.chr : "\x0" }.join.scan(/[\w_-]{3,}/).join(' ')
+            edid.scan(/../).map { |x|
+                n=x.to_i(16);
+                (32..126).include?(n) ? n.chr : "\x0"
+            }.join.scan(/[\w_-]{3,}/).join(' ')
         else
             "*** no edid ***"
         end
@@ -80,12 +83,14 @@ class XRandr
     end
 
     # Return xrandr config string for given config and (optionally) input
-    def self.config_string_for(display_configs, default_config = "--off", must_match_all = false, input = nil)
+    def self.config_string_for(display_configs, default_config = "--off",
+                               must_match_all = false, input = nil)
         to_match = display_configs.keys
 
         configs = self.parse(input).map do |output|
             edid = output.edid || ""
-            serial, conf = display_configs.find { |s, _| edid.index(s.to_s.chars.map { |x| "%02x" % x.ord }.join) }
+            serial, conf = display_configs.find { |s, _|
+                edid.index(s.to_s.chars.map { |x| "%02x" % x.ord }.join) }
             if serial
                 to_match.delete(serial)
                 STDERR.puts "Matched #{output.name} @ #{output.screen} to #{serial}." if $VERBOSE
@@ -99,7 +104,9 @@ class XRandr
             ["--output", output.name, conf || default_config]
         end.flatten
 
-        raise "Failed to match serial(s) '#{to_match.join(' ')}' to an output." if must_match_all && !to_match.empty?
+        if must_match_all && !to_match.empty?
+            raise "Failed to match serial(s) '#{to_match.join(' ')}' to an output."
+        end
 
         configs
     end
@@ -118,25 +125,30 @@ if __FILE__ == $0
         opts.banner = "Usage: #{File.basename($0)} [options]"
         opts.separator 'Available options:'
 
-        opts.on("-sSERIAL", "--serial=SERIAL", String, "Serial of an output for which --config follows") do |s|
+        opts.on("-sSERIAL", "--serial=SERIAL", String,
+                "Serial of an output for which --config follows") do |s|
             options[:serial] = s
         end
 
-        opts.on("-cCONFIG", "--config=CONFIG", String, "Config for output with previously specified serial") do |c|
+        opts.on("-cCONFIG", "--config=CONFIG", String,
+                "Config for output with previously specified serial") do |c|
             raise OptionParser::InvalidArgument, "no serial given so far" unless options[:serial]
             s = options[:serial]
             options[:configs][s] ||= c.split(/\s+/)
         end
 
-        opts.on("-dCONFIG", "--default-config=CONFIG", String, "Default config for non-matching outputs, by default --off.") do |dc|
+        opts.on("-dCONFIG", "--default-config=CONFIG", String,
+                "Default config for non-matching outputs, by default --off.") do |dc|
             options[:default_config] = dc.split(/\s+/)
         end
 
-        opts.on("-pCONFIG", "--prefix=CONFIG", String, "Prefix config before any outputs, by default empty.") do |pfx|
+        opts.on("-pCONFIG", "--prefix=CONFIG", String,
+                "Prefix config before any outputs, by default empty.") do |pfx|
             options[:prefix] = pfx.split(/\s+/)
         end
 
-        opts.on("-a", "--[no-]all-or-abort", "Match all configured or abort, by default false.") do |match_all|
+        opts.on("-a", "--[no-]all-or-abort",
+                "Match all configured or abort, by default false.") do |match_all|
             options[:match_all] = match_all
         end
 
@@ -163,7 +175,8 @@ if __FILE__ == $0
     end
 
     if options[:configs].empty? && !options[:dry_run]
-        STDERR.puts "No config specified, forcing verbose (for debug) and dry run (to avoid killing your X session)."
+        STDERR.puts "No config specified, forcing verbose (for debug) and dry" + 
+            " run (to avoid killing your X session)."
         options[:dry_run] = true
         $VERBOSE = true
     end
@@ -175,7 +188,9 @@ if __FILE__ == $0
 
     config = nil
     begin
-        config = XRandr.config_string_for(options[:configs], options[:default_config], options[:match_all])
+        config = XRandr.config_string_for(options[:configs],
+                                          options[:default_config],
+                                          options[:match_all])
     rescue
         STDERR.puts "Error: #$! (all serials: #{options[:configs].keys.join(', ')})"
         exit 1
