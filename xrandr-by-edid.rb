@@ -53,7 +53,7 @@ class XRandr
     # For raw hex encoded edid, return human readable strings
     def self.humanize_edid(edid)
         if edid
-            edid.scan(/../).map { |x| n=x.to_i(16); (32..126).include?(n) ? n.chr : "." }.join.scan(/\w{3,}/).join(' ')
+            edid.scan(/../).map { |x| n=x.to_i(16); (32..126).include?(n) ? n.chr : "\x0" }.join.scan(/[\w_-]{3,}/).join(' ')
         else
             "*** no edid ***"
         end
