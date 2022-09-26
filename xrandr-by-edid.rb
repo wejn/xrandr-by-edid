@@ -93,7 +93,9 @@ class XRandr
                 edid.index(s.to_s.chars.map { |x| "%02x" % x.ord }.join) }
             if serial
                 to_match.delete(serial)
-                STDERR.puts "Matched #{output.name} @ #{output.screen} to #{serial}." if $VERBOSE
+                if $VERBOSE
+                    STDERR.puts "Matched #{output.name} @ #{output.screen} to #{serial}."
+                end
             else
                 if $VERBOSE
                     STDERR.puts "Couldn't match #{output.name} to any serial."
@@ -132,7 +134,9 @@ if __FILE__ == $0
 
         opts.on("-cCONFIG", "--config=CONFIG", String,
                 "Config for output with previously specified serial") do |c|
-            raise OptionParser::InvalidArgument, "no serial given so far" unless options[:serial]
+            unless options[:serial]
+                raise OptionParser::InvalidArgument, "no serial given so far"
+            end
             s = options[:serial]
             options[:configs][s] ||= c.split(/\s+/)
         end
